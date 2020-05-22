@@ -13,6 +13,8 @@ reupload=""
 output=""
 command=()
 
+reloader="chromereloader"
+
 function help_msg() {
   echo "sample usage: ${BASH_SOURCE[0]} -t http://localhost:3000 -u grafana-user -p grafana-pass -- jsonnet -J grafonnet dashboard.jsonnet"
   exit 1
@@ -20,6 +22,17 @@ function help_msg() {
 
 function run_output() {
   "$@" >"$output"
+}
+
+function test_grafana_auth() {
+    local code="$(curl -s -o /dev/null -w '%{http_code}' \
+    --user "$grafana_username:$grafana_password" \
+    "$grafana_url/api/org")"
+
+    if [ "$code" -ne 200 ]; then
+      echo 'failed to auth to grafana'
+      exit 1
+    fi
 }
 
 function grafana_reuploader() {
@@ -42,6 +55,7 @@ function grafana_reuploader() {
     "$grafana_url/api/dashboards/db" -d "$payload"
     curl_ret_val=$?
     echo
+    curl -s -o /dev/null 'http://localhost:8686/reload'
     return $curl_ret_val
   fi
 }
@@ -91,6 +105,8 @@ if [ -n "$output" ]; then
   exit $?
 fi
 
+test_grafana_auth
+
 temp_dashboard="$(mktemp)"
 temp_dashboardold="$(mktemp)"
 echo "generate temp file @ $temp_dashboard"
@@ -98,7 +114,10 @@ echo "generate temp file @ $temp_dashboard"
 function cleanup() {
     rm "$temp_dashboard"
     rm "$temp_dashboardold"
+    curl 'http://localhost:8686/shutdown'
 }
+
+"$script_dir/$reloader" -target "$grafana_url" -user "$grafana_username" -pass "$grafana_password" &
 
 fswatch -I -e '.*' -i '\.json$' -i '\.libsonnet$' -i '\.jsonnet$' . | xargs -n1 -I{} -- \
   "$script_path" -o "$temp_dashboard" \
