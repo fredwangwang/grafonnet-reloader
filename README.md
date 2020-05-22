@@ -2,6 +2,8 @@
 
 automatically uploads the generated Grafana json after file changes
 
+![a cool demo showing here that you are missing](pic/reduced-rec.gif)
+
 
 ## Usage
 
