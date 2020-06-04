@@ -42,10 +42,10 @@ func main() {
 
 	err := chromedp.Run(ctx,
 		chromedp.Navigate(*target),
-		chromedp.WaitVisible(`.login-form`),
+		chromedp.WaitVisible(`//input[@name="user"]`),
 		chromedp.SendKeys(`//input[@name="user"]`, *user),
 		chromedp.SendKeys(`//input[@name="password"]`, *pass),
-		chromedp.Click(`#login-view > form > div.login-button-group > button`, chromedp.NodeVisible),
+		chromedp.Click(`//button[contains(., 'Log')]`, chromedp.NodeVisible),
 	)
 	if err != nil {
 		log.Fatalln(err)
