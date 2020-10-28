@@ -1,6 +1,6 @@
 
 
-automatically uploads the generated Grafana json after file changes
+automatically reloads the generated Grafana dashboard after grafonnet file changes
 
 ![a cool demo showing here that you are missing](pic/reduced-rec.gif)
 
